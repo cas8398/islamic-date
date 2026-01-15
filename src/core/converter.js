@@ -22,7 +22,7 @@ export class HijriDateCalculator {
     try {
       const gregorianDate = new Date(year, month - 1, day);
       const converter = new UQCal(gregorianDate);
-      converter.convert();
+      converter.convert((type = "umm"));
 
       const hijriDateStr = converter.getHijriDate();
       const langKey = language || "en"; // Simplified
@@ -48,6 +48,7 @@ export class HijriDateCalculator {
       };
     }
   }
+
   getCurrentHijriDate(language = null, dayChangeAtMidnight = null) {
     const lang = language || this.options.language;
     const dayChange =

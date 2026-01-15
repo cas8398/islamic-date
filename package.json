@@ -1,6 +1,6 @@
 {
   "name": "islamic-date",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Islamic Hijri calendar with Umm Al-Qura conversion, Islamic events detection, and Javanese calendar support. Multi-language (Arabic, Indonesian, English).",
   "main": "dist/islamic-date.cjs",
   "module": "dist/islamic-date.esm.js",
