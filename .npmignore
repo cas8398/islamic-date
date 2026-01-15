@@ -1,0 +1,16 @@
+# Development files
+src/
+tests/
+examples/
+rollup.config.js
+jest.config.js
+*.log
+.DS_Store
+.git/
+node_modules/
+coverage/
+.vscode/
+.idea/
+
+# Build artifacts (except dist)
+!dist/

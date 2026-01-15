@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Islamic Date - Browser Example</title>
+    <!-- Updated CDN URL -->
+    <script src="https://unpkg.com/islamic-date/dist/islamic-date.umd.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+        color: white;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 2.5em;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+      .calendar-card {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+        transition: transform 0.3s;
+      }
+      .calendar-card:hover {
+        transform: translateY(-5px);
+      }
+      .calendar-card h2 {
+        margin-bottom: 15px;
+        font-size: 1.5em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .calendar-card h2 .icon {
+        font-size: 1.3em;
+      }
+      .date-display {
+        font-size: 2em;
+        font-weight: bold;
+        margin: 10px 0;
+        text-align: center;
+      }
+      .details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+      }
+      .detail-item {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 15px;
+        border-radius: 10px;
+      }
+      .events {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 15px;
+      }
+      .event-item {
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .event-item:last-child {
+        border-bottom: none;
+      }
+      .controls {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+      }
+      button {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.3s;
+        font-size: 1em;
+      }
+      button:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+      select {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 1em;
+      }
+      option {
+        background: #764ba2;
+      }
+      @media (max-width: 600px) {
+        .container {
+          padding: 20px;
+        }
+        .date-display {
+          font-size: 1.5em;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🌙 Islamic Date Calendar</h1>
+
+      <div class="calendar-card">
+        <h2><span class="icon">📅</span> Gregorian Date</h2>
+        <div class="date-display" id="gregorian-date"></div>
+      </div>
+
+      <div class="calendar-card">
+        <h2><span class="icon">🌙</span> Hijri Date</h2>
+        <div class="date-display" id="hijri-date"></div>
+        <div class="details">
+          <div class="detail-item">
+            <strong>Day:</strong> <span id="hijri-day"></span>
+          </div>
+          <div class="detail-item">
+            <strong>Month:</strong> <span id="hijri-month"></span>
+          </div>
+          <div class="detail-item">
+            <strong>Year:</strong> <span id="hijri-year"></span>
+          </div>
+        </div>
+        <div class="events" id="hijri-events"></div>
+      </div>
+
+      <div class="calendar-card">
+        <h2><span class="icon">🎋</span> Jawa Date</h2>
+        <div class="date-display" id="jawa-date"></div>
+        <div class="details">
+          <div class="detail-item">
+            <strong>Pasaran:</strong> <span id="jawa-pasaran"></span>
+          </div>
+          <div class="detail-item">
+            <strong>Neptu:</strong> <span id="jawa-neptu"></span>
+          </div>
+          <div class="detail-item">
+            <strong>Weton:</strong> <span id="jawa-weton"></span>
+          </div>
+          <div class="detail-item">
+            <strong>Day Index:</strong> <span id="jawa-day-index"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <select id="language-select">
+          <option value="en">English</option>
+          <option value="ar">Arabic (العربية)</option>
+          <option value="id">Indonesian</option>
+          <option value="jv">Javanese</option>
+        </select>
+        <button onclick="updateDate('today')">Today</button>
+        <button onclick="updateDate('tomorrow')">Tomorrow</button>
+        <button onclick="updateDate('yesterday')">Yesterday</button>
+        <button onclick="convertSpecificDate()">Convert Date</button>
+        <button onclick="showAllCalendars()">All Calendars</button>
+      </div>
+
+      <div class="calendar-card" id="conversion-result" style="display: none">
+        <h2><span class="icon">🔄</span> Date Conversion</h2>
+        <div id="conversion-content"></div>
+      </div>
+    </div>
+
+    <script>
+      // Your library exports functions directly to window object
+      // Check what's available
+      console.log(
+        "Available exports:",
+        Object.keys(window).filter(
+          (k) =>
+            k.includes("Date") ||
+            k.includes("Jawa") ||
+            k.includes("get") ||
+            k.includes("JAWA_")
+        )
+      );
+
+      // Based on your test code, these should be available:
+      // getCurrentHijriDate, gregorianToHijri, getIslamicEvents,
+      // getJawaDate, getJawaDayFromGregorian, JAWA_DAYS, JAWA_MONTHS, getAllCalendars
+
+      let currentDate = new Date();
+      let currentLanguage = "en";
+
+      function updateDisplay() {
+        const lang = document.getElementById("language-select").value;
+        currentLanguage = lang;
+
+        // Update Gregorian
+        const gregorianDate = currentDate.toLocaleDateString("en-GB");
+        document.getElementById("gregorian-date").textContent = gregorianDate;
+
+        // Update Hijri - Use getCurrentHijriDate directly
+        const hijriDate = getCurrentHijriDate({
+          language: lang,
+          dayChangeAtMidnight: false,
+        });
+
+        document.getElementById(
+          "hijri-date"
+        ).textContent = `${hijriDate.day} ${hijriDate.monthName} ${hijriDate.year} H`;
+        document.getElementById("hijri-day").textContent = hijriDate.day;
+        document.getElementById("hijri-month").textContent =
+          hijriDate.monthName;
+        document.getElementById("hijri-year").textContent = hijriDate.year;
+
+        // Update Hijri events
+        const events = getIslamicEvents(
+          hijriDate.month,
+          hijriDate.day,
+          hijriDate.weekIndex,
+          lang
+        );
+
+        const eventsDiv = document.getElementById("hijri-events");
+        if (events && events.length > 0) {
+          eventsDiv.innerHTML =
+            "<strong>Events:</strong>" +
+            events
+              .map((event) => `<div class="event-item">${event}</div>`)
+              .join("");
+          eventsDiv.style.display = "block";
+        } else {
+          eventsDiv.style.display = "none";
+        }
+
+        // Update Jawa date - Using getJawaDate directly
+        const jawaDate = getJawaDate(currentDate, lang);
+        document.getElementById(
+          "jawa-date"
+        ).textContent = `${jawaDate.dayName}, ${jawaDate.day} ${jawaDate.monthName} ${jawaDate.year} J`;
+
+        document.getElementById("jawa-pasaran").textContent =
+          jawaDate.pasaran || jawaDate.dayName;
+        document.getElementById("jawa-neptu").textContent = jawaDate.neptu
+          ? jawaDate.neptu.total
+          : "N/A";
+        document.getElementById("jawa-weton").textContent = jawaDate.neptu
+          ? jawaDate.neptu.meaning
+          : "N/A";
+
+        // Get Jawa day index
+        const jawaDayIndex = getJawaDayFromGregorian(currentDate);
+        document.getElementById("jawa-day-index").textContent = jawaDayIndex;
+      }
+
+      function updateDate(type) {
+        switch (type) {
+          case "today":
+            currentDate = new Date();
+            break;
+          case "tomorrow":
+            currentDate = new Date();
+            currentDate.setDate(currentDate.getDate() + 1);
+            break;
+          case "yesterday":
+            currentDate = new Date();
+            currentDate.setDate(currentDate.getDate() - 1);
+            break;
+        }
+        updateDisplay();
+      }
+
+      function convertSpecificDate() {
+        const userDate = prompt("Enter date (YYYY-MM-DD):", "2024-03-15");
+        if (!userDate) return;
+
+        const [year, month, day] = userDate.split("-").map(Number);
+        const hijri = gregorianToHijri(year, month, day, currentLanguage);
+
+        const resultDiv = document.getElementById("conversion-result");
+        const contentDiv = document.getElementById("conversion-content");
+
+        contentDiv.innerHTML = `
+                <div class="date-display">${userDate}</div>
+                <div class="details">
+                    <div class="detail-item">
+                        <strong>Hijri:</strong> ${hijri.day} ${hijri.monthName} ${hijri.year} H
+                    </div>
+                    <div class="detail-item">
+                        <strong>Day:</strong> ${hijri.day}
+                    </div>
+                    <div class="detail-item">
+                        <strong>Month:</strong> ${hijri.monthName}
+                    </div>
+                    <div class="detail-item">
+                        <strong>Year:</strong> ${hijri.year} H
+                    </div>
+                </div>
+            `;
+
+        resultDiv.style.display = "block";
+      }
+
+      function showAllCalendars() {
+        const all = getAllCalendars({
+          language: currentLanguage,
+          includeEvents: true,
+          includeJawa: true,
+        });
+
+        alert(JSON.stringify(all, null, 2));
+      }
+
+      // Initialize
+      document
+        .getElementById("language-select")
+        .addEventListener("change", updateDisplay);
+
+      // Check if library loaded
+      if (typeof getCurrentHijriDate === "undefined") {
+        console.error(
+          "Islamic Date library not loaded! Available:",
+          Object.keys(window)
+        );
+        alert("Error: Library not loaded. Check CDN URL and console.");
+      } else {
+        console.log("Library loaded successfully!");
+        updateDisplay();
+      }
+
+      // Auto-update every minute
+      setInterval(() => {
+        currentDate = new Date();
+        updateDisplay();
+      }, 60000);
+    </script>
+  </body>
+</html>
