@@ -2,53 +2,107 @@ const { gregorianToHijri } = require("../dist/islamic-date.cjs");
 
 const log = (title) => console.log(`\n=== ${title} ===`);
 
-// Helper for Gregorian Month Name
-const getGregMonthName = (year, month, day) => {
-  return new Date(year, month - 1, day).toLocaleString("en-GB", {
-    month: "long",
-  });
-};
+log("COMPREHENSIVE NEW YEAR TEST (2010-2030)");
 
-/**
- * 2️⃣ HIJRI CONVERSION (ARABIC)
- */
-log("HIJRI CONVERSION (ACCURACY & GEORGIAN MONTH)");
-const testDates = [
-  // --- 1447 AH ---
-  { g: [2026, 1, 1], e: "12 Rajab 1447", note: "New Year 2026" },
-  { g: [2026, 1, 15], e: "26 Rajab 1447", note: "Today" },
-  { g: [2026, 1, 20], e: "1 Sya'ban 1447", note: "Awal Sya'ban" },
-  { g: [2026, 2, 18], e: "1 Ramadhan 1447", note: "Awal Puasa" },
-  { g: [2026, 3, 20], e: "1 Syawal 1447", note: "Hari Raya Idul Fitri" },
-  { g: [2026, 4, 18], e: "1 Dzulkaidah 1447", note: "Awal Dzulqa'dah" },
-  { g: [2026, 5, 18], e: "1 Dzulhijjah 1447", note: "Awal Dzulhijjah" },
-  { g: [2026, 5, 27], e: "10 Dzulhijjah 1447", note: "Idul Adha" },
+let passed = 0;
+let failed = 0;
+const failedDetails = [];
+const yearErrors = [];
 
-  // --- 1448 AH (Tahun Baru Hijriah) ---
-  { g: [2026, 6, 16], e: "1 Muharram 1448", note: "Tahun Baru Islam 1448" },
-  { g: [2026, 7, 16], e: "1 Safar 1448", note: "Awal Safar" },
-  { g: [2026, 8, 14], e: "1 Rabiul Awal 1448", note: "Awal Rabiul Awal" },
-  { g: [2026, 9, 13], e: "1 Rabiul Akhir 1448", note: "Awal Rabiul Akhir" },
-  { g: [2026, 10, 12], e: "1 Jumadil Awal 1448", note: "Awal Jumadil Awal" },
-  { g: [2026, 11, 11], e: "1 Jumadil Akhir 1448", note: "Awal Jumadil Akhir" },
-  { g: [2026, 12, 10], e: "1 Rajab 1448", note: "Awal Rajab 1448" },
-];
+// Test every Gregorian New Year from 2010 to 2040
+for (let year = 2010; year <= 2030; year++) {
+  const testDate = [year, 1, 1]; // Jan 1 of each year
 
-testDates.forEach(({ g, e, note }) => {
-  const gMonth = getGregMonthName(g[0], g[1], g[2]);
-  const res = gregorianToHijri(g[0], g[1], g[2], (language = "id"));
-
-  // Format result to match the 'Expected' string style for comparison
-  const formattedResult = `${res.day} ${res.monthName} ${res.year}`;
-  const displayResult = `${formattedResult}`;
-
-  // Check if result matches expected
-  const isMatch = formattedResult === e;
-  const status = isMatch ? "✅" : "❌";
-
-  console.log(
-    `${status} [${g[2].toString().padStart(2)} ${gMonth.padEnd(9)} ${
-      g[0]
-    }] -> ${displayResult.padEnd(25)} | Expected: ${e}`
+  const res = gregorianToHijri(
+    testDate[0],
+    testDate[1],
+    testDate[2],
+    "id",
+    "m" // MABIMS calendar
   );
+
+  if (!res.success) {
+    const errorMsg = `${year}-01-01: Error - ${res.error}`;
+    console.log(`❌ ${errorMsg}`);
+    failed++;
+    failedDetails.push(errorMsg);
+    yearErrors.push(year);
+    continue;
+  }
+
+  const formatted = `${res.day} ${res.monthName} ${res.year}`;
+  console.log(`✅ ${year.toString().padStart(4)}-01-01 → ${formatted}`);
+  passed++;
+}
+
+// Also test critical dates (start of each Gregorian month for a few years)
+log("CRITICAL DATE SAMPLING");
+
+const sampleYears = [2010, 2015, 2020, 2025, 2030, 2035];
+const criticalDates = [];
+
+sampleYears.forEach((year) => {
+  // Test start of each month
+  for (let month = 1; month <= 12; month++) {
+    criticalDates.push([year, month, 1]);
+  }
 });
+
+criticalDates.forEach(([year, month, day]) => {
+  const res = gregorianToHijri(year, month, day, "id", "m");
+
+  if (!res.success) {
+    console.log(`❌ ${year}-${month.toString().padStart(2)}-${day}: Error`);
+    failed++;
+  } else {
+    passed++;
+  }
+});
+
+// Summary
+console.log(`\n📊 COMPREHENSIVE TEST SUMMARY (1990-2050):`);
+console.log(`✅ Passed: ${passed}`);
+console.log(`❌ Failed: ${failed}`);
+console.log(
+  `📈 Success Rate: ${((passed / (passed + failed)) * 100).toFixed(1)}%`
+);
+
+if (yearErrors.length > 0) {
+  console.log(`\n🔴 YEARS WITH ERRORS (New Year Test):`);
+
+  // Group consecutive error years
+  let startYear = yearErrors[0];
+  let prevYear = yearErrors[0];
+  const errorRanges = [];
+
+  for (let i = 1; i < yearErrors.length; i++) {
+    if (yearErrors[i] === prevYear + 1) {
+      prevYear = yearErrors[i];
+    } else {
+      if (startYear === prevYear) {
+        errorRanges.push(`${startYear}`);
+      } else {
+        errorRanges.push(`${startYear}-${prevYear}`);
+      }
+      startYear = yearErrors[i];
+      prevYear = yearErrors[i];
+    }
+  }
+
+  // Add last range
+  if (startYear === prevYear) {
+    errorRanges.push(`${startYear}`);
+  } else {
+    errorRanges.push(`${startYear}-${prevYear}`);
+  }
+
+  console.log(`   Missing data for years: ${errorRanges.join(", ")}`);
+}
+
+if (failedDetails.length > 0) {
+  console.log(`\n🔴 FAILED DETAILS (First 10):`);
+  failedDetails.slice(0, 10).forEach((detail) => console.log(`  ${detail}`));
+  if (failedDetails.length > 10) {
+    console.log(`  ... and ${failedDetails.length - 10} more errors`);
+  }
+}

@@ -10,6 +10,7 @@
 ## ✨ Features
 
 - 🌙 **Hijri Calendar** - Umm Al-Qura calendar (Saudi official standard)
+- 🌏 **MABIMS Calendar** - MABIMS unified calendar (2010-2030) _(Experimental)_
 - 📅 **Gregorian ↔ Hijri** - Bidirectional date conversion
 - 🎋 **Javanese Calendar** - Traditional Javanese calendar system
 - 🕌 **Islamic Events** - Automatic detection of Ramadan, Eid, and other significant dates
@@ -87,16 +88,23 @@ console.log(today);
 - `options.language` - Language code: `'ar'`, `'id'`, `'en'` (default: `'en'`)
 - `options.dayChangeAtMidnight` - When day changes: `true` for midnight, `false` for sunset (default: `true`)
 
-#### `gregorianToHijri(year, month, day, language)`
+#### `gregorianToHijri(year, month, day, language, calendarType)`
 
-Convert Gregorian date to Hijri date.
+Convert Gregorian date to Hijri date with optional calendar type selection.
 
 ```javascript
-import { gregorianToHijri } from "islamic-date";
+import { gregorianToHijri, CalendarType } from "islamic-date";
 
+// Default: Umm Al-Qura calendar
 const hijri = gregorianToHijri(2024, 3, 11, "ar");
 console.log(`${hijri.day} ${hijri.monthName} ${hijri.year} هـ`);
 // Output: ١ رمضان ١٤٤٥ هـ
+
+// Using MABIMS calendar (2010-2030 only)
+const hijriMabims = gregorianToHijri(2024, 3, 11, "id", CalendarType.MABIMS);
+console.log(
+  `${hijriMabims.day} ${hijriMabims.monthName} ${hijriMabims.year} H`
+);
 ```
 
 **Parameters:**
@@ -105,6 +113,40 @@ console.log(`${hijri.day} ${hijri.monthName} ${hijri.year} هـ`);
 - `month` - Gregorian month 1-12 (number)
 - `day` - Gregorian day 1-31 (number)
 - `language` - Language code (string, optional, default: `'en'`)
+- `calendarType` - Calendar type (string, optional, default: `CalendarType.UMMALQURA`)
+
+**Calendar Types:**
+
+```javascript
+import { CalendarType } from "islamic-date";
+
+CalendarType.UMMALQURA; // 'umm' - Saudi Arabia's official calendar (default)
+CalendarType.MABIMS; // 'mabims' - MABIMS unified calendar (2010-2030) ⚠️ Experimental
+```
+
+**Return Value:**
+
+For successful conversions:
+
+```javascript
+{
+  success: true,
+  day: 15,
+  month: 7,
+  year: 1446,
+  monthName: 'Rajab',
+  weekIndex: 3
+}
+```
+
+For failed conversions (e.g., date outside MABIMS range):
+
+```javascript
+{
+  success: false,
+  error: "Date outside MABIMS calendar range (2010-2030)"
+}
+```
 
 #### `getHijriDateWithEvents(options)`
 
@@ -120,6 +162,63 @@ const dateWithEvents = getHijriDateWithEvents({
 
 console.log(dateWithEvents.events);
 // ['Awal Ramadan'] or [] if no events
+```
+
+### 🌏 MABIMS Calendar (Experimental)
+
+The MABIMS (Brunei Darussalam-Indonesia-Malaysia-Singapore) unified Islamic calendar is available for dates between 2010 and 2030.
+
+#### Features
+
+- Unified calendar used across Southeast Asian Muslim countries
+- Pre-calculated dates from official MABIMS authorities
+- Useful for regional Islamic event planning and scheduling
+
+#### Limitations
+
+⚠️ **Important**: MABIMS calendar support is currently experimental and has the following limitations:
+
+- **Date Range**: Only supports Gregorian dates from **2010 to 2030**
+- **Data Completeness**: Some dates may be missing from the dataset
+- **Validation**: Always check the `success` property in the response
+
+#### Usage Example
+
+```javascript
+import { gregorianToHijri, CalendarType } from "islamic-date";
+
+// Check if conversion was successful
+const result = gregorianToHijri(2025, 1, 1, "id", CalendarType.MABIMS);
+
+if (result.success) {
+  console.log(`${result.day} ${result.monthName} ${result.year} H`);
+} else {
+  console.log(`Error: ${result.error}`);
+  // Fallback to Umm Al-Qura if needed
+  const fallback = gregorianToHijri(2025, 1, 1, "id", CalendarType.UMMALQURA);
+  console.log(
+    `Using Umm Al-Qura: ${fallback.day} ${fallback.monthName} ${fallback.year} H`
+  );
+}
+```
+
+#### Comprehensive Testing
+
+```javascript
+const { gregorianToHijri, CalendarType } = require("islamic-date");
+
+// Test all years in MABIMS range
+for (let year = 2010; year <= 2030; year++) {
+  const result = gregorianToHijri(year, 1, 1, "id", CalendarType.MABIMS);
+
+  if (result.success) {
+    console.log(
+      `✅ ${year}-01-01 → ${result.day} ${result.monthName} ${result.year}`
+    );
+  } else {
+    console.log(`❌ ${year}-01-01: ${result.error}`);
+  }
+}
 ```
 
 ### Islamic Events
@@ -257,6 +356,8 @@ The Javanese calendar combines:
 - **Pasaran** (5-day market cycle): Legi, Pahing, Pon, Wage, Kliwon
 - **12 Months**: Sura, Sapar, Mulud, Bakda Mulud, Jumadilawal, Jumadilakir, Rejeb, Ruwah, Pasa, Sawal, Dulkangidah, Besar
 
+## 💡 Examples
+
 ### Event Calendar Generator
 
 ```javascript
@@ -287,6 +388,36 @@ function getYearlyEvents(language = "en") {
 console.log(getYearlyEvents("ar"));
 ```
 
+### MABIMS Calendar Testing
+
+```javascript
+const { gregorianToHijri, CalendarType } = require("islamic-date");
+
+let passed = 0;
+let failed = 0;
+
+// Test all Gregorian New Years from 2010 to 2030
+for (let year = 2010; year <= 2030; year++) {
+  const result = gregorianToHijri(year, 1, 1, "id", CalendarType.MABIMS);
+
+  if (result.success) {
+    const formatted = `${result.day} ${result.monthName} ${result.year}`;
+    console.log(`✅ ${year}-01-01 → ${formatted}`);
+    passed++;
+  } else {
+    console.log(`❌ ${year}-01-01: ${result.error}`);
+    failed++;
+  }
+}
+
+console.log(`\n📊 Test Summary:`);
+console.log(`✅ Passed: ${passed}`);
+console.log(`❌ Failed: ${failed}`);
+console.log(
+  `📈 Success Rate: ${((passed / (passed + failed)) * 100).toFixed(1)}%`
+);
+```
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
@@ -304,6 +435,7 @@ MIT License - see the [LICENSE](LICENSE) file for details
 ## 🙏 Acknowledgments
 
 - Umm Al-Qura calendar algorithm
+- MABIMS unified Islamic calendar authorities
 - Islamic calendar conversion methods
 - Javanese calendar traditions
 

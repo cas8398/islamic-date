@@ -5,6 +5,12 @@ Original code: http://www.staff.science.uu.nl/~gent0113/islam/ummalqura_converte
 import { UMMALQURA_DAT } from "./UmmData.js";
 import { MABIMS_DAT } from "./MabimsDat.js";
 
+// Calendar type enum
+export const CalendarType = {
+  UMMALQURA: "umm",
+  MABIMS: "mabims",
+};
+
 export class UQCal {
   constructor(d) {
     const date = d ? new Date(d) : new Date();
@@ -24,8 +30,20 @@ export class UQCal {
     return ((n % m) + m) % m;
   }
 
-  convert(type = "umm") {
+  convert(type = CalendarType.UMMALQURA) {
     let { Gday: day, Gmonth: month, Gyear: year } = this;
+
+    // ===== ADDED: Quick Gregorian year check first =====
+    if (type === CalendarType.MABIMS) {
+      if (this.Gyear < 2010 || this.Gyear > 2030) {
+        this.Hday = -1; // Or this.error = "Out of range"
+        this.Hmonth = -1;
+        this.Hyear = -1;
+        this.success = false;
+        return this;
+      }
+    }
+    // ===== END ADDED =====
 
     // Adjust month
     let m = month + 1;
@@ -67,11 +85,12 @@ export class UQCal {
 
     const mcjdn = cjdn - 2400000;
 
-    // Choose dataset based on type
+    // Choose dataset and epoch based on type
     let DATASET, EPOCH;
-    if (type === "mabims") {
-      DATASET = MABIMS_DAT;
-      EPOCH = 16261 + 1431 * 12; // Adjust epoch for MABIMS
+
+    if (type === CalendarType.MABIMS) {
+      DATASET = MABIMS_DAT; // COMPLETE dataset
+      EPOCH = 17149;
     } else {
       DATASET = UMMALQURA_DAT;
       EPOCH = 16261;
@@ -120,7 +139,7 @@ export class UQCal {
   }
 
   // Static method - simple version
-  static gregorianToHijri(year, month, day, type = "umm") {
+  static gregorianToHijri(year, month, day, type = CalendarType.UMMALQURA) {
     try {
       const gregorianDate = new Date(year, month - 1, day);
       const converter = new UQCal(gregorianDate);
@@ -137,6 +156,10 @@ export class UQCal {
         gregorianDate: `${year}-${String(month).padStart(2, "0")}-${String(
           day
         ).padStart(2, "0")}`,
+        monthLength: converter.Hlength,
+        isShortMonth: converter.Hlength === 29,
+        weekday: converter.wkday,
+        calendarType: type,
       };
     } catch (error) {
       console.error("Error:", error);
@@ -149,7 +172,7 @@ export class UQCal {
 }
 
 // Optional: Utility function for quick conversion
-export const convertToHijri = (date, type = "umm") => {
+export const convertToHijri = (date, type = CalendarType.UMMALQURA) => {
   const converter = new UQCal(date);
   return converter.convert(type);
 };
