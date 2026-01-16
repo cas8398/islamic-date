@@ -1,7 +1,7 @@
 {
   "name": "islamic-date",
-  "version": "0.1.5",
-  "description": "Islamic Hijri calendar with Umm Al-Qura conversion, Islamic events detection, and Javanese calendar support. Multi-language (Arabic, Indonesian, English).",
+  "version": "0.1.6",
+  "description": "Hijri calendar with Umm Al-Qura & MABIMS conversion, Islamic events, Javanese calendar. Multi-language (Arabic, Indonesian, Javanese, English).",
   "main": "dist/islamic-date.cjs",
   "module": "dist/islamic-date.esm.js",
   "browser": "dist/islamic-date.umd.js",
@@ -40,7 +40,6 @@
   "homepage": "https://github.com/cas8398/islamic-date#readme",
   "files": [
     "dist",
-    "src",
     "README.md",
     "LICENSE"
   ],

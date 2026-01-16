@@ -2,36 +2,7 @@ import { nodeResolve } from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import terser from "@rollup/plugin-terser";
 
-// Simpler: Just expose functions to global scope
-const simpleGlobalExpose = () => {
-  return {
-    name: "simple-global-expose",
-    renderChunk(code, chunk, options) {
-      if (options.format === "umd") {
-        // Change the UMD pattern to expose directly to global
-        return code
-          .replace(
-            "typeof define === 'function' && define.amd ? define(['exports'], factory) :",
-            "typeof define === 'function' && define.amd ? define(['exports'], factory) :"
-          )
-          .replace(
-            "(global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.islamicDate = {}));",
-            "(global = typeof globalThis !== 'undefined' ? globalThis : global || self, (function() {\n" +
-              "  var exports = {};\n" +
-              "  factory(exports);\n" +
-              "  // Expose all functions to global scope\n" +
-              "  Object.keys(exports).forEach(function(key) {\n" +
-              "    if (key !== '__esModule' && key !== 'default') {\n" +
-              "      global[key] = exports[key];\n" +
-              "    }\n" +
-              "  });\n" +
-              "})());"
-          );
-      }
-      return code;
-    },
-  };
-};
+// It adds extra code size
 
 export default {
   input: "src/index.js",
@@ -49,7 +20,7 @@ export default {
     {
       file: "dist/islamic-date.umd.js",
       format: "umd",
-      name: "islamicDate", // Still needed for the pattern
+      name: "islamicDate",
       exports: "named",
     },
     {
@@ -57,8 +28,31 @@ export default {
       format: "umd",
       name: "islamicDate",
       exports: "named",
-      plugins: [terser()],
+      plugins: [
+        terser({
+          compress: {
+            passes: 3,
+            unsafe: true,
+            unsafe_math: true,
+            unsafe_methods: true,
+            unsafe_proto: true,
+            unsafe_regexp: true,
+            pure_getters: true,
+            keep_fargs: false,
+            drop_console: true, // Remove console logs
+            drop_debugger: true,
+          },
+          mangle: {
+            properties: false,
+            keep_fnames: false,
+            toplevel: true,
+          },
+          format: {
+            comments: false,
+          },
+        }),
+      ],
     },
   ],
-  plugins: [nodeResolve(), commonjs(), simpleGlobalExpose()],
+  plugins: [nodeResolve(), commonjs()],
 };

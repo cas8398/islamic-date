@@ -1,4 +1,3 @@
-// examples/node-basic.js
 const {
   getHijriDateWithEvents,
   gregorianToHijri,
@@ -9,53 +8,49 @@ const {
 
 console.log("📅 islamic-date - Node.js Basic Examples\n");
 
-// Example 1: Current date with events
-console.log("1. 📍 Current Date with Events:");
-const today = getHijriDateWithEvents({
-  language: "ar",
-  dayChangeAtMidnight: false,
+// Example 1: Current date using MABIMS criteria (Standard for SE Asia)
+console.log("1. 📍 Current Date (MABIMS):");
+const today = getCurrentHijriDate({
+  language: "id",
+  method: "m", // Use 'm' for MABIMS/Kemenag alignment
 });
-console.log(`   ${today.day} ${today.monthName} ${today.year} هـ`);
-if (today.events && today.events.length > 0) {
-  console.log(`   الأحداث: ${today.events.join(" - ")}`);
+console.log(`   Hari ini: ${today.day} ${today.monthName} ${today.year} H`);
+console.log();
+
+// Example 2: The 2026 Ramadan Transition (Your recent fix!)
+console.log("2. 🔄 Specific Conversion (Ramadhan 2026):");
+// February 19, 2026 is 1 Ramadhan per your MABIMS_DAT fix
+const ramadan2026 = gregorianToHijri(2026, 2, 19, "id", "m");
+console.log(
+  `   19 Feb 2026 → ${ramadan2026.day} ${ramadan2026.monthName} ${ramadan2026.year} H`
+);
+console.log();
+
+// Example 3: Multiple Languages and Formats
+console.log("3. 🌍 Multiple Languages:");
+["en", "ar", "id"].forEach((lang) => {
+  const date = getCurrentHijriDate({ language: lang });
+  console.log(
+    `   [${lang.toUpperCase()}]: ${date.day} ${date.monthName} ${date.year}`
+  );
+});
+console.log();
+
+// Example 4: Islamic Events with Descriptions
+console.log("4. 🕌 Islamic Events:");
+const syawalEvents = getIslamicEvents(10, 1, 5, "id");
+if (syawalEvents.length > 0) {
+  console.log(`   1 Syawal: ${syawalEvents[0]}`); // Output: Hari Raya Idul Fitri
 }
 console.log();
 
-// Example 2: Convert specific date
-console.log("2. 🔄 Convert Specific Date:");
-const hijri = gregorianToHijri(2024, 3, 15, "id");
-console.log(
-  `   15 Maret 2024 → ${hijri.day} ${hijri.monthName} ${hijri.year} H`
-);
-console.log();
-
-// Example 3: Current date in different languages
-console.log("3. 🌍 Multiple Languages:");
-const languages = ["en", "ar", "id"];
-languages.forEach((lang) => {
-  const date = getCurrentHijriDate({ language: lang });
-  console.log(`   ${lang}: ${date.day} ${date.monthName} ${date.year}`);
-});
-console.log();
-
-// Example 4: Islamic events for specific date
-console.log("4. 🕌 Islamic Events:");
-const ramadanEvents = getIslamicEvents(9, 1, 3, "en");
-console.log(
-  `   Ramadan 1: ${ramadanEvents.length > 0 ? ramadanEvents[0] : "No events"}`
-);
-
-const eidEvents = getIslamicEvents(10, 1, 5, "ar");
-console.log(
-  `   Eid al-Fitr: ${eidEvents.length > 0 ? eidEvents[0] : "No events"}`
-);
-console.log();
-
-// Example 5: Jawa calendar
+// Example 5: Jawa Calendar (Promised result)
 console.log("5. 🎋 Jawa/Pasaran Calendar:");
-getJawaDate(new Date(), "id").then((jawa) => {
-  console.log(
-    `   ${jawa.dayName}, ${jawa.day} ${jawa.monthName} ${jawa.year} J`
-  );
-  console.log(`   Neptu: ${jawa.neptu.total} (${jawa.neptu.meaning})`);
-});
+getJawaDate(new Date(), "id")
+  .then((jawa) => {
+    console.log(
+      `   ${jawa.dayName} ${jawa.pasaran}, ${jawa.day} ${jawa.monthName} ${jawa.year} J`
+    );
+    console.log(`   Neptu: ${jawa.neptu.total} (${jawa.neptu.meaning})`);
+  })
+  .catch((err) => console.error("   Jawa Calendar Error:", err));
