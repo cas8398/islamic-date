@@ -1,6 +1,6 @@
 {
   "name": "islamic-date",
-  "version": "0.1.6",
+  "version": "0.1.8",
   "description": "Hijri calendar with Umm Al-Qura & MABIMS conversion, Islamic events, Javanese calendar. Multi-language (Arabic, Indonesian, Javanese, English).",
   "main": "dist/islamic-date.cjs",
   "module": "dist/islamic-date.esm.js",
@@ -54,5 +54,11 @@
     "node": ">=12.0.0"
   },
   "type": "module",
-  "exports": "{\n  \".\": {\n    \"import\": \"./dist/islamic-date.esm.js\",\n    \"require\": \"./dist/islamic-date.cjs\",\n    \"default\": \"./dist/islamic-date.esm.js\"\n  }\n}"
+  "exports": {
+    ".": {
+      "import": "./dist/islamic-date.esm.js",
+      "require": "./dist/islamic-date.cjs",
+      "default": "./dist/islamic-date.esm.js"
+    }
+  }
 }
