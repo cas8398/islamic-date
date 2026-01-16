@@ -2,7 +2,7 @@ const {
   getJawaDate,
   getJawaDayFromGregorian,
   JAWA_DAYS,
-  JAWA_MONTHS,
+  getEventsForDate,
   getAllCalendars,
 } = require("../dist/islamic-date.cjs");
 
@@ -64,3 +64,17 @@ langs.forEach((lang) => {
   const jawa = getJawaDate(new Date(), lang);
   console.log(`${lang}: ${jawa.dayName}, ${jawa.monthName}`);
 });
+console.log();
+
+// Test 6
+console.log("🔍 Test 6: Events Test - DEBUG");
+const testDate = new Date("2026-01-01"); // kamis : should have
+console.log("Date:", testDate.toISOString().split("T")[0]);
+console.log(
+  "Gregorian weekday:",
+  testDate.getDay(),
+  "(0=Sun, 1=Mon, ..., 4=Thu)"
+);
+
+const events = getEventsForDate(testDate, "jv");
+console.log(events);

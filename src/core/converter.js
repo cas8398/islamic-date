@@ -37,8 +37,6 @@ export class HijriDateCalculator {
    */
   gregorianToHijri(year, month, day, language = null, calendarType = null) {
     try {
-      const gregorianDate = new Date(year, month - 1, day);
-
       // Normalize calendar type
       const type = normalizeCalendarType(
         calendarType || this.options.calendarType
@@ -49,6 +47,9 @@ export class HijriDateCalculator {
 
       const langKey = language || this.options.language;
       const monthName = getHijriMonthName(result.month, langKey);
+
+      const gregorianWeekday = new Date(year, month - 1, day).getDay();
+      const weekIndex = gregorianWeekday === 0 ? 1 : gregorianWeekday + 1;
 
       return {
         success: true,
@@ -61,6 +62,7 @@ export class HijriDateCalculator {
         gregorianDate: `${year}-${String(month).padStart(2, "0")}-${String(
           day
         ).padStart(2, "0")}`,
+        weekIndex: weekIndex,
         calendarType: type,
       };
     } catch (error) {
@@ -150,6 +152,7 @@ export function gregorianToHijri(
     language,
     calendarType: normalizeCalendarType(calendarType),
   });
+
   return calc.gregorianToHijri(year, month, day, language, calendarType);
 }
 
