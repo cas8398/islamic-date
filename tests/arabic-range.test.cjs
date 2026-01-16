@@ -1,8 +1,6 @@
+// tests/arabic-range.test.js
 const { gregorianToHijri } = require("../dist/islamic-date.cjs");
 
-const log = (title) => console.log(`\n=== ${title} ===`);
-
-// Combined test data: [Year, Month, Day], Expected Hijri Day, Expected Hijri Name
 const testCases = [
   { g: [2026, 1, 19], hDay: 30, hName: "Rajab" }, // End of Rajab 1447
   { g: [2026, 1, 20], hDay: 1, hName: "Sya'ban" }, // Start
@@ -30,34 +28,54 @@ const testCases = [
   { g: [2026, 12, 10], hDay: 1, hName: "Rajab" }, // Start
 ];
 
-log("FULL 2026 TRANSITION TEST (STARTS & ENDS)");
+describe("2026 Hijri Month Transitions (MABIMS Calendar)", () => {
+  test("all month transitions should be correct", () => {
+    let passed = 0;
+    let failed = 0;
+    const failures = [];
 
-let passed = 0;
-let failed = 0;
+    testCases.forEach(({ g, hDay, hName }, index) => {
+      const [year, month, day] = g;
+      const res = gregorianToHijri(year, month, day, "id", "m");
 
-testCases.forEach(({ g, hDay, hName }) => {
-  const res = gregorianToHijri(g[0], g[1], g[2], "id", "m");
+      // Normalize name check
+      const actualName = res.monthName
+        ? res.monthName.replace(/[\s']+/g, "").toLowerCase()
+        : "";
+      const expectedName = hName.replace(/[\s']+/g, "").toLowerCase();
 
-  // Normalize name check (remove 'ul' or spaces if your library uses different formatting)
-  const actualName = res.monthName.replace(/[\s']+/g, "").toLowerCase();
-  const expectedName = hName.replace(/[\s']+/g, "").toLowerCase();
+      const isSuccess =
+        res.success && res.day === hDay && actualName.includes(expectedName);
 
-  if (res.success && res.day === hDay && actualName.includes(expectedName)) {
-    console.log(
-      `✅ ${g.join("-").padEnd(10)} → ${res.day} ${res.monthName} ${res.year}`
-    );
-    passed++;
-  } else {
-    console.log(
-      `❌ ${g
-        .join("-")
-        .padEnd(10)} FAILED! Expected ${hDay} ${hName}, but got ${res.day} ${
-        res.monthName
-      }`
-    );
-    failed++;
-  }
+      if (isSuccess) {
+        passed++;
+      } else {
+        failed++;
+        failures.push({
+          date: `${year}-${month.toString().padStart(2)}-${day
+            .toString()
+            .padStart(2)}`,
+          expected: `${hDay} ${hName}`,
+          actual: res.success
+            ? `${res.day} ${res.monthName}`
+            : `Error: ${res.error}`,
+        });
+      }
+    });
+
+    // Log detailed results
+    console.log(`\n📊 2026 Month Transition Test Results:`);
+    console.log(`✅ Passed: ${passed}`);
+    console.log(`❌ Failed: ${failed}`);
+
+    if (failures.length > 0) {
+      console.log(`\n🔴 Failures:`);
+      failures.forEach((f) => {
+        console.log(`   ${f.date}: Expected ${f.expected}, Got ${f.actual}`);
+      });
+    }
+
+    // Assert all passed
+    expect(failed).toBe(0);
+  });
 });
-
-log("FINAL RESULT");
-console.log(`Passed: ${passed} | Failed: ${failed}`);

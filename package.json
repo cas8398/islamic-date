@@ -9,8 +9,8 @@
   "scripts": {
     "build": "rollup -c",
     "build:watch": "rollup -c -w",
-    "test": "jest --passWithNoTests",
-    "test:watch": "jest --watch",
+    "test": "jest",
+    "test:verbose": "jest --verbose",
     "prepublishOnly": "npm run test && npm run build",
     "publish:dry": "npm publish --dry-run",
     "version": "npm run build && git add -A dist",

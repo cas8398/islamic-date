@@ -1,6 +1,7 @@
+// jest.config.js
 export default {
   testEnvironment: "node",
-  testMatch: ["**/tests/**/*.test.js"],
+  testMatch: ["**/tests/**/*.test.cjs"],
   collectCoverageFrom: ["src/**/*.js", "!src/**/index.js"],
   coverageThreshold: {
     global: {
@@ -10,4 +11,6 @@ export default {
       statements: 80,
     },
   },
+  transform: {},
+  moduleFileExtensions: ["js", "cjs", "mjs"],
 };
